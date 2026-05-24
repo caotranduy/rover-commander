@@ -1,0 +1,5 @@
+{
+    "cmake.configureOnEdit": false,
+    "cmake.configureOnOpen": false,
+    "C_Cpp.default.intelliSenseMode": "windows-msvc-x64"
+}

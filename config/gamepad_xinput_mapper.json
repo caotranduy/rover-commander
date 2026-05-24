@@ -1,0 +1,23 @@
+{
+    "input_mapping": {
+        "gamepad": {
+            "modes": {
+                "select_front_steer": "DPAD_UP",
+                "select_rear_steer": "DPAD_DOWN",
+                "select_crab_walk": "DPAD_LEFT",
+                "select_point_turn": "DPAD_RIGHT"
+            },
+            "axes": {
+                "drive_power": "LEFT_STICK_Y",
+                "drive_steer": "RIGHT_STICK_X",
+                "crab_vector_x": "RIGHT_STICK_X",
+                "crab_vector_y": "RIGHT_STICK_Y",
+                "spin_velocity": "RIGHT_STICK_X"
+            }
+        }
+    },
+    "network": {
+        "rover_ip": "127.0.0.1",
+        "udp_port": 8080
+    }
+}
