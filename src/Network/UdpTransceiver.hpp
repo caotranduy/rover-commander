@@ -31,6 +31,7 @@ public:
 
     void start();
     void stop();
+    bool perform_handshake();
 
 private:
     void start_transmit_timer();

@@ -38,10 +38,10 @@ struct RoverIntentCommand
 {
     UdpSecurityHeader header; // Nhúng Header bảo mật vào đầu gói tin (Bắt buộc)
 
-    uint8_t actor_id;      // Bắt buộc là 0x01 (Định danh cho Khung gầm/Base)
-    uint8_t maneuver_type; // Lấy từ enum ManeuverType ở trên
+    uint8_t actor_id = 0x01; // Bắt buộc là 0x01 (Định danh cho Khung gầm/Base)
+    uint8_t maneuver_type;   // Lấy từ enum ManeuverType ở trên
 
-    // Thay vì dùng uint8_t (0-255), ta dùng int8_t (-100 đến 100) để code nhàn hơn:
+    //  dùng int8_t (-100 đến 100):
     // - Dấu âm: Lùi / Rẽ Trái
     // - Dấu dương: Tiến / Rẽ Phải
     // - Số 0: Đứng im / Thẳng lái
@@ -51,5 +51,11 @@ struct RoverIntentCommand
     uint8_t emergency_brake; // Cờ phanh khẩn cấp: 1 = Phanh cứng, 0 = Bình thường
 };
 typedef RoverIntentCommand WheelActorCommand;
+
+struct RoverHandshakePacket
+{
+    uint32_t handshake_key; ///< Authentication token passphrase.
+    uint8_t reserved[8];    ///< Padding bytes for size matching and future telemetry.
+};
 
 #pragma pack(pop)

@@ -16,7 +16,7 @@
 #include "Input/ControlManager.hpp"
 #include "Network/UdpTransceiver.hpp"
 
-#define XINPUT_CONFIG_PATH "config/gamepad_xinput_mapper.json"
+#define XINPUT_CONFIG_PATH "E:\\.rover-rasberry\\rover-comander\\config\\gamepad_xinput_mapper.json"
 
 /**
  * @brief Helper function to stringify the semantic maneuver type for console debugging.
@@ -44,42 +44,48 @@ int main()
 
     try
     {
-        /* 1. Load dynamic configuration */
         auto config = ConfigLoader::load(XINPUT_CONFIG_PATH);
         std::string target_ip = config["network"]["rover_ip"];
         int target_port = config["network"]["udp_port"];
 
-        /* 2. Initialize the thread-safe centralized state manager */
         auto system_state = std::make_shared<SystemState>();
 
-        /* 3. Initialize and start the background UDP networking thread */
+        /* Khởi tạo hạ tầng mạng */
         UdpTransceiver transceiver(target_ip, target_port, 8081, system_state);
+
+        /* THỰC THI KỊCH BẢN HANDSHAKE NGAY ĐẦU VÒNG ĐỜI */
+        if (!transceiver.perform_handshake())
+        {
+            std::cerr << "[FATAL] Handshake protocol failed. Terminating system application.\n";
+            return -1; // Ngắt chương trình ngay tại đây nếu không xác thực được xe
+        }
+
+        /* Xác thực thành công -> Kích hoạt luồng chạy ngầm đa luồng 50Hz */
         transceiver.start();
 
-        /* 4. Initialize the input orchestration layer */
         ControlManager control_manager(system_state, config);
-
-        std::cout << "System online. Polling input at 50Hz. Press Ctrl+C to exit.\n";
+        std::cout << "System online. Entering deterministic 50Hz control loop...\n";
         std::cout << "=============================================================\n";
 
-        /* 5. Primary execution loop */
+        /* Vòng lặp test hiện tại (Giữ nguyên logic cũ của bạn) */
         while (true)
         {
-            /* Tick the control manager to read hardware and map kinematics */
             control_manager.update();
+            auto commands = system_state->get_all_commands();
 
-            /* Fetch the latest packed DTO from the state manager for rendering */
-            RoverIntentCommand cmd = system_state->get_rover_command();
-
-            /* Output the semantic command structure (Overwrites the same line using \r) */
-            printf("\r[Mode: %s] | Throttle: %4d | Steer: %4d | E-Brake: %d | UDP Seq: %6u",
-                   maneuver_to_string(static_cast<ManeuverType>(cmd.maneuver_type)),
-                   cmd.throttle,
-                   cmd.steering,
-                   cmd.emergency_brake,
-                   cmd.header.sequence_num);
-
-            /* Sleep to enforce a ~50Hz deterministic loop cycle (20ms) */
+            for (const auto &cmd : commands)
+            {
+                if (cmd.actor_id == 0x01)
+                {
+                    printf("\r[Mode: %s] | Throttle: %3d | Steer: %3d | E-Brake: %d | UDP Seq: %6u",
+                           maneuver_to_string(static_cast<ManeuverType>(cmd.maneuver_type)),
+                           cmd.throttle,
+                           cmd.steering,
+                           cmd.emergency_brake,
+                           cmd.header.sequence_num);
+                    break;
+                }
+            }
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
         }
     }
@@ -88,6 +94,5 @@ int main()
         std::cerr << "\n[FATAL SYSTEM ERROR] " << e.what() << "\n";
         return -1;
     }
-
     return 0;
 }
