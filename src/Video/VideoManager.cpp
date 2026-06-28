@@ -7,7 +7,7 @@
 #include <iostream>
 #include <vector>
 
-#define GSTREAM_EXE "E:\\.rover-rasberry\\gstream\\msvc_x86_64\\bin\\gst-launch-1.0.exe"
+#define GSTREAM_EXE ".\\gstreamer\\msvc_x86_64\\bin\\gst-launch-1.0.exe"
 
 VideoManager::VideoManager(int udp_port, int tcp_port)
     : m_udp_port(udp_port), m_tcp_port(tcp_port), m_is_running(false)

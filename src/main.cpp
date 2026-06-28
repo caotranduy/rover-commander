@@ -22,7 +22,7 @@
 #include "Video/VideoManager.hpp"
 
 #define XINPUT_CONFIG_PATH ".\\config\\gamepad_xinput_mapper.json"
-#define WEB_SERVER_SCRIPT_PATH ".\\WebUI\\server.js"
+#define WEB_SERVER_EXE_PATH ".\\WebUI\\server.exe"
 #define WEB_HTML_UI_PATH ".\\WebUI\\index.html"
 
 /**
@@ -61,7 +61,8 @@ bool spawn_node_bridge(PROCESS_INFORMATION &pi)
     si.dwFlags = STARTF_USESHOWWINDOW;
     si.wShowWindow = SW_HIDE; // Keep the Node.js console window hidden
 
-    std::string cmd = "node.exe " + std::string(WEB_SERVER_SCRIPT_PATH);
+    std::string cmd = std::string(WEB_SERVER_EXE_PATH);
+
     std::vector<char> cmd_buffer(cmd.begin(), cmd.end());
     cmd_buffer.push_back('\0');
 

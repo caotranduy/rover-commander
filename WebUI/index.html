@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rover Commander - FPV Feed</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jmuxer@2.0.5/dist/jmuxer.min.js"></script>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .video-container {
+            border: 2px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            background-color: #000;
+        }
+
+        /* Chiều ngang camera Raspberry Pi mặc định là 800x600 */
+        video {
+            width: 800px;
+            height: 600px;
+            display: block;
+        }
+
+        .status {
+            margin-top: 15px;
+            font-weight: bold;
+            color: #00ff00;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Rover Front-facing Camera (FPV)</h2>
+
+    <div class="video-container">
+        <video id="player" autoplay muted playsinline></video>
+    </div>
+
+    <div class="status" id="status-text">Waiting for video stream...</div>
+
+    <script>
+        window.onload = function () {
+            /* 1. Cấu hình bộ giải mã JMuxer */
+            var jmuxer = new JMuxer({
+                node: 'player',
+                mode: 'video',
+                flushingTime: 0, // Độ trễ bằng 0, nhả frame ngay lập tức
+                fps: 30,
+                debug: false
+            });
+
+            /* 2. Kết nối tới Node.js Server */
+            var ws = new WebSocket("ws://localhost:50004");
+            ws.binaryType = 'arraybuffer'; // Ép kiểu nhận nhị phân
+
+            ws.onopen = function () {
+                document.getElementById('status-text').innerText = "Connected to Bridge. Receiving H.264 Feed...";
+            };
+
+            /* 3. Đổ dữ liệu H264 trực tiếp vào JMuxer mỗi khi có gói tin mới */
+            ws.onmessage = function (event) {
+                jmuxer.feed({
+                    video: new Uint8Array(event.data)
+                });
+            };
+
+            ws.onclose = function () {
+                document.getElementById('status-text').innerText = "Disconnected from Bridge.";
+                document.getElementById('status-text').style.color = "red";
+            };
+        };
+    </script>
+</body>
+
+</html>
