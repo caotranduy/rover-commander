@@ -18,6 +18,7 @@ add_executable(RoverCommander
     src/Input/ControlManager.cpp
     src/Network/CommandDispatcher.cpp
     src/Network/UdpTransceiver.cpp
+    src/Video/VideoManager.cpp
 )
 
 # 3. Cấu hình Include path cho target
